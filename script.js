@@ -1,59 +1,37 @@
 
-const DEFAULT_DATA = {
-  siteName: "আমাদের ওয়েবসাইট",
-  logo: "",
-  heroTitle: "আপনার পছন্দের সেবা এখন আরও সহজে!",
-  heroDescription: "নিরাপদ ও সহজ উপায়ে আপনার পছন্দের সেবা গ্রহণ করুন।",
-  footerText: "সর্বস্বত্ব সংরক্ষিত।",
-  whatsapp: "",
-  whatsappMessage: "আসসালামু আলাইকুম। আমি বিস্তারিত জানতে চাই।",
-  moreDetails: "আমাদের সেবা সম্পর্কে বিস্তারিত জানতে যোগাযোগ করুন।",
+let websiteData = null;
 
-  packages: [
-    {name:"প্যাকেজ ১", price:"0", date:"0", image:""},
-    {name:"প্যাকেজ ২", price:"0", date:"0", image:""},
-    {name:"প্যাকেজ ৩", price:"0", date:"0", image:""}
-  ],
+async function loadWebsite() {
+  const container = document.getElementById("packageContainer");
 
-  features: [
-    "সহজ অর্ডার করার সুবিধা",
-    "গ্রাহক সহায়তা",
-    "নিরাপদ পেমেন্ট ব্যবস্থা",
-    "দ্রুত সেবা প্রদান",
-    "বিশ্বস্ত কাস্টমার সাপোর্ট"
-  ],
-
-  instructions: [
-    "আপনার পছন্দের প্যাকেজ নির্বাচন করুন।",
-    "প্যাকেজের বিস্তারিত দেখে নিন।",
-    "নিরাপদ পেমেন্ট সম্পন্ন করুন।",
-    "প্রয়োজনে WhatsApp-এ যোগাযোগ করুন।"
-  ]
-};
-
-function getWebsiteData() {
   try {
-    const saved = localStorage.getItem("storeWebsiteData");
-    if (!saved) return DEFAULT_DATA;
+    const response = await fetch("/api/store-data");
+    const result = await response.json();
 
-    return {
-      ...DEFAULT_DATA,
-      ...JSON.parse(saved)
-    };
-  } catch {
-    return DEFAULT_DATA;
+    if (!response.ok || !result.success) {
+      throw new Error("Website data load failed");
+    }
+
+    websiteData = result.data;
+    renderWebsite();
+  } catch (error) {
+    container.textContent =
+      "পণ্যের তথ্য লোড হয়নি। অনুগ্রহ করে পরে চেষ্টা করুন।";
+    console.error(error);
   }
 }
 
+function setText(id, value) {
+  const element = document.getElementById(id);
+  if (element) element.textContent = value || "";
+}
+
 function renderWebsite() {
-  const data = getWebsiteData();
+  if (!websiteData) return;
 
-  document.title = data.siteName;
+  const data = websiteData;
 
-  const setText = (id, value) => {
-    const el = document.getElementById(id);
-    if (el) el.textContent = value || "";
-  };
+  document.title = data.siteName || "Saikat Store";
 
   setText("siteName", data.siteName);
   setText("heroTitle", data.heroTitle);
@@ -62,96 +40,120 @@ function renderWebsite() {
   setText("moreDetails", data.moreDetails);
 
   const logo = document.getElementById("siteLogo");
-  if (logo) {
-    logo.src = data.logo || "";
-    logo.style.display = data.logo ? "block" : "none";
+
+  if (data.logo) {
+    logo.src = data.logo;
+    logo.style.display = "block";
+  } else {
+    logo.style.display = "none";
   }
 
-  const packages = document.getElementById("packageContainer");
+  const container = document.getElementById("packageContainer");
+  container.innerHTML = "";
 
-  if (packages) {
-    packages.replaceChildren();
+  (data.packages || []).forEach(product => {
+    const card = document.createElement("div");
+    card.className = "package-card";
 
-    data.packages.forEach((item, index) => {
-      const card = document.createElement("article");
-      card.className = "package-card";
+    if (product.image) {
+      const image = document.createElement("img");
+      image.src = product.image;
+      image.alt = product.name;
+      image.loading = "lazy";
+      card.appendChild(image);
+    }
 
-      if (item.image) {
-        const img = document.createElement("img");
-        img.src = item.image;
-        img.alt = item.name;
-        card.appendChild(img);
-      }
+    const name = document.createElement("h3");
+    name.textContent = product.name;
+    card.appendChild(name);
 
-      const name = document.createElement("h3");
-      name.textContent = item.name;
+    const price = document.createElement("div");
+    price.className = "package-price";
+    price.textContent = "৳" + Number(product.price).toLocaleString("en-IN");
+    card.appendChild(price);
 
-      const price = document.createElement("div");
-      price.className = "package-price";
-      price.textContent = "৳ " + item.price;
+    const description = document.createElement("p");
+    description.className = "package-date";
+    description.textContent = product.date || "";
+    card.appendChild(description);
 
-      const date = document.createElement("p");
-      date.className = "package-date";
-      date.textContent = "মেয়াদ: " + item.date;
+    const button = document.createElement("button");
+    button.className = "buy-btn";
+    button.textContent = "এখনই কিনুন";
 
-      const button = document.createElement("button");
-      button.className = "buy-btn";
-      button.textContent = "কিনুন";
-      button.addEventListener("click", () => {
-        alert("এই প্যাকেজের অর্ডার ব্যবস্থা এখনো সেটআপ করা হয়নি।");
-      });
+    button.addEventListener("click", () => buyProduct(product.id, button));
 
-      card.append(name, price, date, button);
-      packages.appendChild(card);
-    });
-  }
+    card.appendChild(button);
+    container.appendChild(card);
+  });
 
   const features = document.getElementById("features");
+  features.innerHTML = "";
 
-  if (features) {
-    features.replaceChildren();
+  (data.features || []).forEach((item, index) => {
+    const box = document.createElement("div");
+    box.className = "feature-item";
 
-    data.features.forEach((item, index) => {
-      const box = document.createElement("div");
-      box.className = "feature-item";
+    const number = document.createElement("span");
+    number.textContent = "✓";
 
-      const number = document.createElement("span");
-      number.textContent = "✓";
+    const text = document.createElement("p");
+    text.textContent = item;
 
-      const text = document.createElement("p");
-      text.textContent = item;
-
-      box.append(number, text);
-      features.appendChild(box);
-    });
-  }
+    box.append(number, text);
+    features.appendChild(box);
+  });
 
   const instructions = document.getElementById("buyInstructions");
+  instructions.innerHTML = "";
 
-  if (instructions) {
-    instructions.replaceChildren();
-
-    data.instructions.forEach((item, index) => {
-      const box = document.createElement("div");
-      box.className = "instruction-item";
-      box.textContent = (index + 1) + ". " + item;
-      instructions.appendChild(box);
-    });
-  }
+  (data.instructions || []).forEach((item, index) => {
+    const box = document.createElement("div");
+    box.className = "instruction-item";
+    box.textContent = (index + 1) + ". " + item;
+    instructions.appendChild(box);
+  });
 
   const whatsapp = document.getElementById("whatsappButton");
+  const number = String(data.whatsapp || "").replace(/\D/g, "");
 
-  if (whatsapp) {
-    const number = String(data.whatsapp || "").replace(/\D/g, "");
-    whatsapp.href = number
-      ? "https://wa.me/" + number + "?text=" +
-        encodeURIComponent(data.whatsappMessage)
-      : "#";
-
-    whatsapp.style.display = number ? "flex" : "none";
+  if (number) {
+    const message = encodeURIComponent(
+      data.whatsappMessage || "আসসালামু আলাইকুম। আমি অর্ডার করতে চাই।"
+    );
+    whatsapp.href = "https://wa.me/" + number + "?text=" + message;
+    whatsapp.style.display = "flex";
+  } else {
+    whatsapp.style.display = "none";
   }
 }
 
-document.addEventListener("DOMContentLoaded", renderWebsite);
+async function buyProduct(packageId, button) {
+  const originalText = button.textContent;
+  button.disabled = true;
+  button.textContent = "অপেক্ষা করুন...";
 
-window.addEventListener("storage", renderWebsite);
+  try {
+    const response = await fetch("/api/checkout", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ packageId })
+    });
+
+    const result = await response.json();
+
+    if (!response.ok || !result.success || !result.paymentUrl) {
+      throw new Error(result.message || "পেমেন্ট শুরু করা যায়নি");
+    }
+
+    location.href = result.paymentUrl;
+  } catch (error) {
+    alert(error.message);
+    button.disabled = false;
+    button.textContent = originalText;
+  }
+}
+
+document.addEventListener("DOMContentLoaded", loadWebsite);
