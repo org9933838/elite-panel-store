@@ -1,184 +1,185 @@
 
-const DEFAULT_DATA = {
-  siteName: "আমাদের ওয়েবসাইট",
-  logo: "",
-  heroTitle: "আপনার পছন্দের সেবা এখন আরও সহজে!",
-  heroDescription: "নিরাপদ ও সহজ উপায়ে আপনার পছন্দের সেবা গ্রহণ করুন।",
-  footerText: "সর্বস্বত্ব সংরক্ষিত।",
-  whatsapp: "",
-  whatsappMessage: "আসসালামু আলাইকুম। আমি বিস্তারিত জানতে চাই।",
-  moreDetails: "আমাদের সেবা সম্পর্কে বিস্তারিত জানতে যোগাযোগ করুন।",
-  packages: [
-    {name:"প্যাকেজ ১",price:"0",date:"0",image:""},
-    {name:"প্যাকেজ ২",price:"0",date:"0",image:""},
-    {name:"প্যাকেজ ৩",price:"0",date:"0",image:""}
-  ],
-  features: [
-    "সহজ অর্ডার করার সুবিধা",
-    "গ্রাহক সহায়তা",
-    "নিরাপদ পেমেন্ট ব্যবস্থা",
-    "দ্রুত সেবা প্রদান",
-    "বিশ্বস্ত কাস্টমার সাপোর্ট"
-  ],
-  instructions: [
-    "আপনার পছন্দের প্যাকেজ নির্বাচন করুন।",
-    "প্যাকেজের বিস্তারিত দেখে নিন।",
-    "নিরাপদ পেমেন্ট সম্পন্ন করুন।",
-    "প্রয়োজনে WhatsApp-এ যোগাযোগ করুন।"
-  ]
-};
+const $ = id => document.getElementById(id);
 
-function loadData() {
-  try {
-    return {
-      ...DEFAULT_DATA,
-      ...JSON.parse(localStorage.getItem("storeWebsiteData") || "{}")
-    };
-  } catch {
-    return {...DEFAULT_DATA};
+async function api(url, options = {}) {
+  const response = await fetch(url, {
+    credentials: "same-origin",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...(options.headers || {})
+    }
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.message || "সমস্যা হয়েছে");
   }
+
+  return data;
 }
 
-function saveData(data) {
-  localStorage.setItem("storeWebsiteData", JSON.stringify(data));
-}
-
-function setValue(id, value) {
-  const el = document.getElementById(id);
-  if (el) el.value = value ?? "";
-}
-
-function getValue(id) {
-  return document.getElementById(id)?.value ?? "";
-}
-
-// LOGIN
-const loginForm = document.getElementById("loginForm");
+// LOGIN PAGE
+const loginForm = $("loginForm");
 
 if (loginForm) {
-  loginForm.addEventListener("submit", function(e) {
-    e.preventDefault();
+  loginForm.addEventListener("submit", async event => {
+    event.preventDefault();
 
-    const message = document.getElementById("loginMessage");
-    message.textContent =
-      "নিরাপদ Admin Login চালু করতে Firebase Authentication সেটআপ করুন।";
+    const message = $("loginMessage");
+    message.textContent = "Login হচ্ছে...";
 
-    message.style.color = "#dc2626";
+    try {
+      await api("/api/admin-login", {
+        method: "POST",
+        body: JSON.stringify({
+          username: $("username").value.trim(),
+          password: $("password").value
+        })
+      });
+
+      location.href = "/admin.html";
+    } catch (error) {
+      message.textContent = error.message;
+    }
   });
 }
 
 // ADMIN DASHBOARD
-const adminPage = document.getElementById("saveButton");
+const saveButton = $("saveButton");
 
-if (adminPage) {
-  const data = loadData();
+if (saveButton) {
+  startAdmin();
+}
 
-  setValue("siteNameInput", data.siteName);
-  setValue("logoInput", data.logo);
-  setValue("heroTitleInput", data.heroTitle);
-  setValue("heroDescriptionInput", data.heroDescription);
-  setValue("footerInput", data.footerText);
-  setValue("whatsappInput", data.whatsapp);
-  setValue("whatsappMessageInput", data.whatsappMessage);
-  setValue("detailsInput", data.moreDetails);
+async function startAdmin() {
+  try {
+    const session = await api("/api/admin-session");
 
-  const packageEditor = document.getElementById("packageEditor");
+    if (!session.success) {
+      location.href = "/login.html";
+      return;
+    }
 
-  data.packages.forEach((item, index) => {
+    const result = await api("/api/store-data");
+    fillAdmin(result.data);
+  } catch (error) {
+    alert("Admin Data লোড হয়নি: " + error.message);
+  }
+}
+
+let currentData = null;
+
+function fillAdmin(data) {
+  currentData = data;
+
+  $("siteNameInput").value = data.siteName || "";
+  $("logoInput").value = data.logo || "";
+  $("heroTitleInput").value = data.heroTitle || "";
+  $("heroDescriptionInput").value = data.heroDescription || "";
+  $("footerInput").value = data.footerText || "";
+  $("whatsappInput").value = data.whatsapp || "";
+  $("whatsappMessageInput").value = data.whatsappMessage || "";
+  $("detailsInput").value = data.moreDetails || "";
+
+  const packageEditor = $("packageEditor");
+  packageEditor.innerHTML = "";
+
+  (data.packages || []).forEach((item, index) => {
     const box = document.createElement("div");
     box.className = "package-editor-item";
 
-    const heading = document.createElement("h3");
-    heading.textContent = "প্যাকেজ " + (index + 1);
+    const title = document.createElement("h3");
+    title.textContent = "পণ্য " + (index + 1);
+    box.appendChild(title);
 
-    box.appendChild(heading);
-
-    const fields = [
-      ["নাম", "name", item.name],
-      ["মূল্য", "price", item.price],
-      ["মেয়াদ", "date", item.date],
-      ["ছবির URL", "image", item.image]
-    ];
-
-    fields.forEach(([label, key, value]) => {
-      const wrapper = document.createElement("div");
-      wrapper.className = "editor-row";
-
-      const caption = document.createElement("label");
-      caption.textContent = label;
-
-      const input = document.createElement("input");
-      input.type = "text";
-      input.value = value || "";
-      input.dataset.package = index;
-      input.dataset.field = key;
-
-      wrapper.append(caption, input);
-      box.appendChild(wrapper);
-    });
+    addField(box, "পণ্যের নাম", "pkgName" + index, item.name);
+    addField(box, "দাম (টাকা)", "pkgPrice" + index, item.price);
+    addField(box, "স্টক / বিবরণ", "pkgDate" + index, item.date);
+    addField(box, "ছবির URL", "pkgImage" + index, item.image);
 
     packageEditor.appendChild(box);
   });
 
-  function createListEditor(containerId, items, type) {
-    const container = document.getElementById(containerId);
+  $("featureEditor").innerHTML = "";
+  const features = document.createElement("textarea");
+  features.id = "featuresText";
+  features.rows = 6;
+  features.value = (data.features || []).join("\n");
+  $("featureEditor").appendChild(features);
 
-    items.forEach((value, index) => {
-      const input = document.createElement("input");
-      input.type = "text";
-      input.value = value;
-      input.dataset.list = type;
-      input.dataset.index = index;
-      input.style.marginBottom = "12px";
-      container.appendChild(input);
+  $("instructionEditor").innerHTML = "";
+  const instructions = document.createElement("textarea");
+  instructions.id = "instructionsText";
+  instructions.rows = 6;
+  instructions.value = (data.instructions || []).join("\n");
+  $("instructionEditor").appendChild(instructions);
+}
+
+function addField(parent, labelText, id, value) {
+  const label = document.createElement("label");
+  label.textContent = labelText;
+  label.htmlFor = id;
+
+  const input = document.createElement("input");
+  input.id = id;
+  input.value = value ?? "";
+
+  parent.appendChild(label);
+  parent.appendChild(input);
+}
+
+saveButton?.addEventListener("click", async () => {
+  const message = $("saveMessage");
+  message.textContent = "সংরক্ষণ হচ্ছে...";
+  saveButton.disabled = true;
+
+  try {
+    const data = {
+      ...currentData,
+      siteName: $("siteNameInput").value.trim(),
+      logo: $("logoInput").value.trim(),
+      heroTitle: $("heroTitleInput").value.trim(),
+      heroDescription: $("heroDescriptionInput").value.trim(),
+      footerText: $("footerInput").value.trim(),
+      whatsapp: $("whatsappInput").value.trim(),
+      whatsappMessage: $("whatsappMessageInput").value.trim(),
+      moreDetails: $("detailsInput").value.trim(),
+
+      packages: currentData.packages.map((item, index) => ({
+        ...item,
+        name: $("pkgName" + index).value.trim(),
+        price: $("pkgPrice" + index).value.trim(),
+        date: $("pkgDate" + index).value.trim(),
+        image: $("pkgImage" + index).value.trim()
+      })),
+
+      features: $("featuresText").value
+        .split("\n").map(x => x.trim()).filter(Boolean),
+
+      instructions: $("instructionsText").value
+        .split("\n").map(x => x.trim()).filter(Boolean)
+    };
+
+    const result = await api("/api/store-data", {
+      method: "PUT",
+      body: JSON.stringify(data)
     });
+
+    currentData = data;
+    message.textContent = result.message;
+  } catch (error) {
+    message.textContent = error.message;
+  } finally {
+    saveButton.disabled = false;
   }
+});
 
-  createListEditor("featureEditor", data.features, "features");
-  createListEditor("instructionEditor", data.instructions, "instructions");
-
-  adminPage.addEventListener("click", function() {
-    const updated = loadData();
-
-    updated.siteName = getValue("siteNameInput");
-    updated.logo = getValue("logoInput");
-    updated.heroTitle = getValue("heroTitleInput");
-    updated.heroDescription = getValue("heroDescriptionInput");
-    updated.footerText = getValue("footerInput");
-    updated.whatsapp = getValue("whatsappInput");
-    updated.whatsappMessage = getValue("whatsappMessageInput");
-    updated.moreDetails = getValue("detailsInput");
-
-    document.querySelectorAll("[data-package]").forEach(input => {
-      const index = Number(input.dataset.package);
-      const field = input.dataset.field;
-
-      if (updated.packages[index]) {
-        updated.packages[index][field] = input.value;
-      }
-    });
-
-    document.querySelectorAll("[data-list]").forEach(input => {
-      const type = input.dataset.list;
-      const index = Number(input.dataset.index);
-
-      if (updated[type]) {
-        updated[type][index] = input.value;
-      }
-    });
-
-    saveData(updated);
-
-    const message = document.getElementById("saveMessage");
-    message.textContent = "পরিবর্তন এই ব্রাউজারে সংরক্ষিত হয়েছে।";
-  });
-}
-
-// LOGOUT
-const logout = document.getElementById("logoutButton");
-
-if (logout) {
-  logout.addEventListener("click", () => {
-    window.location.href = "login.html";
-  });
-}
+$("logoutButton")?.addEventListener("click", async () => {
+  try {
+    await api("/api/admin-logout", { method: "POST" });
+  } finally {
+    location.href = "/login.html";
+  }
+});
