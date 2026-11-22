@@ -4,69 +4,57 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Elite Panel - বিশ্বস্ত ডিজিটাল পণ্য ও সেবা">
-  <title>Elite Panel | ডিজিটাল স্টোর</title>
-  <link rel="stylesheet" href="/style.css">
+  <title>আমাদের ওয়েবসাইট</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-  <header class="header">
-    <a class="logo" href="/">ELITE <span>PANEL</span></a>
-    <p>আপনার বিশ্বস্ত ডিজিটাল সেবা কেন্দ্র</p>
-  </header>
+<header class="header">
+  <div class="brand">
+    <img id="siteLogo" src="" alt="Logo">
+    <h2 id="siteName">আমাদের ওয়েবসাইট</h2>
+  </div>
+  <a href="#packages" class="header-btn">প্যাকেজ দেখুন</a>
+</header>
 
-  <main>
-    <section class="hero">
-      <span class="tag">সহজ • নিরাপদ • নির্ভরযোগ্য</span>
-      <h1>আপনার পছন্দের ডিজিটাল সেবা এখন এক জায়গায়</h1>
-      <p>পছন্দের প্যাকেজ নির্বাচন করুন এবং সহজে অর্ডার সম্পন্ন করুন।</p>
-      <a class="hero-button" href="#packages">প্যাকেজ দেখুন</a>
-    </section>
+<section class="hero">
+  <span class="tag">আপনার বিশ্বস্ত ডিজিটাল পার্টনার</span>
+  <h1 id="heroTitle">আপনার পছন্দের সেবা এখন আরও সহজে!</h1>
+  <p id="heroDescription">
+    সহজে পছন্দ করুন, নিরাপদে অর্ডার করুন এবং আমাদের সাপোর্ট নিন।
+  </p>
+  <a href="#packages" class="main-btn">এখনই কিনুন</a>
+</section>
 
-    <section class="section" id="packages">
-      <h2>আমাদের প্যাকেজ</h2>
-      <p class="section-info">আপনার প্রয়োজন অনুযায়ী একটি প্যাকেজ বেছে নিন।</p>
-      <div id="product-list" class="product-grid"></div>
-    </section>
+<section class="section" id="packages">
+  <h2>আমাদের প্যাকেজসমূহ</h2>
+  <p>আপনার পছন্দের প্যাকেজটি নির্বাচন করুন।</p>
+  <div id="packageContainer" class="packages"></div>
+</section>
 
-    <section id="checkout" class="checkout hidden">
-      <h2>অর্ডার সম্পন্ন করুন</h2>
-      <div id="selected-product" class="selected-product"></div>
+<section class="section">
+  <h2>যেসব সুবিধা পাবেন</h2>
+  <div id="features" class="features"></div>
+</section>
 
-      <form id="order-form">
-        <label for="customer-name">আপনার নাম</label>
-        <input id="customer-name" type="text"
-          placeholder="আপনার সম্পূর্ণ নাম" required>
+<section class="section">
+  <h2>কীভাবে কিনবেন?</h2>
+  <div id="buyInstructions"></div>
+</section>
 
-        <label for="customer-phone">মোবাইল নম্বর</label>
-        <input id="customer-phone" type="tel"
-          placeholder="01XXXXXXXXX" maxlength="11" required>
+<section class="section">
+  <h2>আরও বিস্তারিত</h2>
+  <p id="moreDetails"></p>
+</section>
 
-        <label for="payment-method">পেমেন্ট পদ্ধতি</label>
-        <select id="payment-method" required>
-          <option value="">পেমেন্ট পদ্ধতি নির্বাচন করুন</option>
-          <option value="bkash">বিকাশ</option>
-          <option value="nagad">নগদ</option>
-          <option value="rocket">রকেট</option>
-        </select>
+<footer>
+  <p id="footerText">সর্বস্বত্ব সংরক্ষিত।</p>
+</footer>
 
-        <button id="pay-button" type="submit">
-          অর্ডার ও পেমেন্ট
-        </button>
-        <p id="message" role="status"></p>
-        <p class="secure-note">
-          পেমেন্ট সম্পন্ন হয়েছে বলে নিশ্চিত না হওয়া পর্যন্ত
-          কোনো পণ্য বা সেবা প্রদান করা হবে না।
-        </p>
-      </form>
-    </section>
-  </main>
+<a id="whatsappButton" class="whatsapp" href="#" target="_blank">
+  <span>☏</span>
+</a>
 
-  <footer>
-    <p>© ২০২৬ Elite Panel। সর্বস্বত্ব সংরক্ষিত।</p>
-    <p>গ্রাহক সহায়তার জন্য আমাদের সঙ্গে যোগাযোগ করুন।</p>
-  </footer>
-
-  <script src="/script.js"></script>
+<script src="script.js"></script>
 </body>
 </html>
