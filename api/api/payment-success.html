@@ -1,0 +1,100 @@
+
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>পেমেন্ট যাচাই</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .result {
+      max-width: 480px;
+      margin: 80px auto;
+      padding: 30px 20px;
+      background: white;
+      border-radius: 16px;
+      text-align: center;
+      box-shadow: 0 5px 25px #0001;
+    }
+    .result h1 { margin-bottom: 15px; }
+    .result p { margin: 12px 0; }
+    .result a {
+      display: inline-block;
+      margin-top: 15px;
+      padding: 12px 22px;
+      border-radius: 8px;
+      background: #16a34a;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <div class="result">
+    <h1 id="heading">পেমেন্ট যাচাই হচ্ছে...</h1>
+    <p id="message">অনুগ্রহ করে অপেক্ষা করুন।</p>
+    <div id="actions"></div>
+  </div>
+
+  <script>
+    async function verifyPayment() {
+      const params = new URLSearchParams(location.search);
+      const orderId = params.get("orderId");
+      const transactionId = params.get("transactionId");
+
+      const heading = document.getElementById("heading");
+      const message = document.getElementById("message");
+      const actions = document.getElementById("actions");
+
+      if (!orderId || !transactionId) {
+        heading.textContent = "তথ্য পাওয়া যায়নি";
+        message.textContent =
+          "পেমেন্টের তথ্য অসম্পূর্ণ। WhatsApp-এ যোগাযোগ করুন।";
+        return;
+      }
+
+      try {
+        const response = await fetch("/api/verify", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ orderId, transactionId })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || !data.verified) {
+          throw new Error(data.message || "যাচাই হয়নি");
+        }
+
+        heading.textContent = "পেমেন্ট সফল হয়েছে!";
+        message.textContent =
+          "আপনার পেমেন্ট যাচাই হয়েছে। এখন WhatsApp-এ সাইজ ও ঠিকানা জানান।";
+
+        const storeResponse = await fetch("/api/store-data");
+        const store = await storeResponse.json();
+        const number = String(store.data?.whatsapp || "")
+          .replace(/\D/g, "");
+
+        if (number) {
+          const text = encodeURIComponent(
+            "আসসালামু আলাইকুম। আমার পেমেন্ট সফল হয়েছে। Order ID: " +
+            orderId + " । অনুগ্রহ করে আমার টি-শার্ট অর্ডারটি নিশ্চিত করুন।"
+          );
+
+          const link = document.createElement("a");
+          link.href = "https://wa.me/" + number + "?text=" + text;
+          link.target = "_blank";
+          link.rel = "noopener";
+          link.textContent = "WhatsApp-এ অর্ডার সম্পন্ন করুন";
+          actions.appendChild(link);
+        }
+      } catch (error) {
+        heading.textContent = "যাচাই সম্পন্ন হয়নি";
+        message.textContent =
+          error.message + "। কিছুক্ষণ পরে আবার চেষ্টা করুন অথবা সাপোর্টে যোগাযোগ করুন।";
+      }
+    }
+
+    verifyPayment();
+  </script>
+</body>
+</html>
