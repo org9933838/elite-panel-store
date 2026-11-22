@@ -1,0 +1,47 @@
+
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Database Setup</title>
+</head>
+<body style="font-family:Arial;max-width:450px;margin:50px auto;padding:20px">
+  <h2>Saikat Store Database Setup</h2>
+  <p>Vercel Environment Variables-এ রাখা SETUP_SECRET লিখুন।</p>
+  <input id="secret" type="password" placeholder="Setup Secret"
+    style="width:100%;padding:13px;box-sizing:border-box">
+  <button id="run" style="margin-top:15px;padding:13px;width:100%">
+    Database তৈরি করুন
+  </button>
+  <p id="message"></p>
+
+  <script>
+    document.getElementById("run").onclick = async () => {
+      const button = document.getElementById("run");
+      const message = document.getElementById("message");
+
+      button.disabled = true;
+      message.textContent = "অপেক্ষা করুন...";
+
+      try {
+        const response = await fetch("/api/setup", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-setup-secret": document.getElementById("secret").value
+          },
+          body: "{}"
+        });
+
+        const result = await response.json();
+        message.textContent = result.message || "সম্পন্ন";
+      } catch {
+        message.textContent = "সমস্যা হয়েছে। আবার চেষ্টা করুন।";
+      } finally {
+        button.disabled = false;
+      }
+    };
+  </script>
+</body>
+</html>
