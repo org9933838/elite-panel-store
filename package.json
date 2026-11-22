@@ -1,0 +1,15 @@
+
+{
+  "name": "saikat-store",
+  "version": "1.0.0",
+  "private": true,
+  "description": "বাংলা অনলাইন স্টোর",
+  "scripts": {
+    "dev": "vercel dev",
+    "start": "vercel dev"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "vercel": "^48.0.0"
+  }
+}
