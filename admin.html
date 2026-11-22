@@ -1,0 +1,76 @@
+
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Admin Dashboard</title>
+<link rel="stylesheet" href="admin.css">
+</head>
+<body>
+
+<header class="admin-header">
+  <h2>Admin Dashboard</h2>
+  <button id="logoutButton">Logout</button>
+</header>
+
+<main class="admin-container">
+
+  <section class="admin-card">
+    <h2>ওয়েবসাইট সেটিংস</h2>
+
+    <label>Website Name</label>
+    <input id="siteNameInput">
+
+    <label>Logo URL</label>
+    <input id="logoInput" placeholder="ছবির URL দিন">
+
+    <label>Headline</label>
+    <input id="heroTitleInput">
+
+    <label>বিবরণ</label>
+    <textarea id="heroDescriptionInput"></textarea>
+
+    <label>Footer Text</label>
+    <input id="footerInput">
+  </section>
+
+  <section class="admin-card">
+    <h2>তিনটি প্যাকেজ</h2>
+    <div id="packageEditor"></div>
+  </section>
+
+  <section class="admin-card">
+    <h2>পাঁচটি সুবিধা</h2>
+    <div id="featureEditor"></div>
+  </section>
+
+  <section class="admin-card">
+    <h2>কীভাবে কিনবেন</h2>
+    <div id="instructionEditor"></div>
+  </section>
+
+  <section class="admin-card">
+    <h2>WhatsApp Customer Support</h2>
+
+    <label>WhatsApp নম্বর</label>
+    <input id="whatsappInput" placeholder="8801XXXXXXXXX">
+
+    <label>WhatsApp Message</label>
+    <textarea id="whatsappMessageInput"></textarea>
+
+    <label>আরও বিস্তারিত</label>
+    <textarea id="detailsInput"></textarea>
+  </section>
+
+  <button class="save-button" id="saveButton">
+    সব পরিবর্তন সংরক্ষণ করুন
+  </button>
+
+  <p id="saveMessage"></p>
+
+</main>
+
+<script src="admin.js"></script>
+</body>
+</html>
